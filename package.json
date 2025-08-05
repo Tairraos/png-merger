@@ -4,7 +4,7 @@
   "description": "一个基于Node.js的命令行工具，使用ImageMagick自动处理PNG图片的智能合并",
   "main": "index.js",
   "bin": {
-    "png-merger": "./bin/cli.js"
+    "png-merger": "bin/cli.js"
   },
   "scripts": {
     "start": "node bin/cli.js",
