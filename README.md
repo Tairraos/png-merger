@@ -32,14 +32,14 @@ A Node.js-based command-line tool for intelligent PNG image merging using ImageM
 #### Global Installation
 
 ```bash
-npm install -g image-merge-tool
+npm install -g png-merger
 ```
 
 #### Local Development
 
 ```bash
 git clone <repository-url>
-cd image-merge-tool
+cd png-merger
 npm install
 ```
 
@@ -49,19 +49,19 @@ npm install
 
 ```bash
 # Process Downloads directory with default settings
-image-merge
+png-merger
 
 # Specify working directory
-image-merge -d /path/to/your/images
+png-merger -d /path/to/your/images
 
 # Show verbose output
-image-merge -v
+png-merger -v
 
 # Use English interface
-image-merge -l en
+png-merger -l en
 
 # Combine options
-image-merge -d ~/Pictures/screenshots -v -l en
+png-merger -d ~/Pictures/screenshots -v -l en
 ```
 
 #### Command Line Options
@@ -104,10 +104,10 @@ work_dir/
 
 ```bash
 # Process PNG files in Downloads directory
-image-merge
+png-merger
 
 # Process specified directory with verbose output in English
-image-merge -d ~/Pictures/screenshots -v -l en
+png-merger -d ~/Pictures/screenshots -v -l en
 ```
 
 ### Notes
@@ -176,14 +176,14 @@ chmod 755 /path/to/work/directory
 #### 全局安装
 
 ```bash
-npm install -g image-merge-tool
+npm install -g png-merger
 ```
 
 #### 本地开发
 
 ```bash
 git clone <repository-url>
-cd image-merge-tool
+cd image-merger
 npm install
 ```
 
@@ -193,19 +193,19 @@ npm install
 
 ```bash
 # 使用默认设置处理Downloads目录
-image-merge
+png-merger
 
 # 指定工作目录
-image-merge -d /path/to/your/images
+png-merger -d /path/to/your/images
 
 # 显示详细输出
-image-merge -v
+png-merger -v
 
 # 使用中文界面
-image-merge -l zh
+png-merger -l zh
 
 # 组合使用
-image-merge -d ~/Pictures/screenshots -v -l zh
+png-merger -d ~/Pictures/screenshots -v -l zh
 ```
 
 #### 命令行选项
@@ -248,10 +248,10 @@ work_dir/
 
 ```bash
 # 处理Downloads目录下的PNG文件
-image-merge
+png-merger
 
 # 处理指定目录并显示详细信息（中文界面）
-image-merge -d ~/Pictures/screenshots -v -l zh
+png-merger -d ~/Pictures/screenshots -v -l zh
 ```
 
 ### 注意事项
@@ -297,7 +297,7 @@ chmod 755 /path/to/work/directory
 ### Project Structure / 项目结构
 
 ```
-image-merge-tool/
+png-merger/
 ├── bin/
 │   └── cli.js          # Command line entry / 命令行入口
 ├── src/
