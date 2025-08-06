@@ -19,26 +19,26 @@ class ImageMerger {
     this.workDir = workDir;
     this.verbose = verbose;
     this.i18n = i18n;
-    
+
     // 如果没有传入i18n实例，创建默认的中文实例
     if (!this.i18n) {
       const I18n = require('./i18n');
       this.i18n = new I18n('zh');
     }
-    
+
     // 根据语言设置目录名
     const isEnglish = this.i18n.getCurrentLanguage() === 'en';
     this.doneDir = path.join(workDir, isEnglish ? 'merged' : '已合成');
     this.processedDir = path.join(this.doneDir, isEnglish ? 'materials' : '素材');
     this.errorDir = path.join(this.doneDir, isEnglish ? 'error' : '问题图片');
-    
+
     this.stats = {
       total: 0,
       processed: 0,
       errors: 0,
       merged: 0
     };
-    
+
     this.hasErrors = false; // 跟踪是否有错误文件
   }
 
@@ -47,45 +47,45 @@ class ImageMerger {
    */
   async process() {
     this.log(this.i18n.t('process.scanning'));
-    
+
     // 创建必要的目录
     await this.createDirectories();
-    
+
     // 扫描PNG文件
     let pngFiles = await this.scanPngFiles();
     this.stats.total = pngFiles.length;
-    
+
     if (pngFiles.length === 0) {
       console.log(chalk.yellow(this.i18n.t('process.nofiles')));
       return;
     }
-    
+
     console.log(chalk.cyan(this.i18n.t('process.found', pngFiles.length)));
-    
+
     // 按创建时间排序
     pngFiles = await this.sortByCreationTime(pngFiles);
     
     // 处理文件队列
     while (pngFiles.length >= 2) {
       const [file1, file2] = pngFiles;
-      
+
       this.log(this.i18n.t('match.checking', path.basename(file1), path.basename(file2)));
-      
+
       try {
         // 检查匹配条件
         const matchResult = await this.checkMatch(file1, file2);
-        
+
         if (matchResult.canProcess) {
           // 合并图片
           await this.mergeImages(file1, file2);
-          
+
           // 移动已处理的文件
           await this.moveToProcessed([file1, file2]);
-          
+
           // 从队列中移除已处理的文件
           pngFiles.splice(0, 2);
           this.stats.merged++;
-          
+
           console.log(chalk.green(`✅ ${this.i18n.t('merge.success.pair', path.basename(file1), path.basename(file2))}`));
         } else {
           if (matchResult.shouldMoveToError) {
@@ -105,12 +105,12 @@ class ImageMerger {
           const size = await this.getImageSize(file1);
           const aspectRatio = this.getAspectRatio(size.width, size.height);
           const allowedRatios = ['1:1', '2:3', '3:2', '4:3', '3:4', '9:16', '16:9'];
-          
+
           if (allowedRatios.includes(aspectRatio)) {
             await this.moveToError(file1, error.message);
             this.stats.errors++;
           } else {
-            console.log(chalk.yellow(`⚠️  ${this.i18n.t('file.skipped.ratio', path.basename(file1))}`))
+            console.log(chalk.yellow(`⚠️  ${this.i18n.t('file.skipped.ratio', path.basename(file1))}`));
           }
         } catch (sizeError) {
           // 如果无法获取尺寸，默认移入error
@@ -119,10 +119,10 @@ class ImageMerger {
         }
         pngFiles.shift();
       }
-      
+
       this.stats.processed++;
     }
-    
+
     // 处理剩余的单个文件
     if (pngFiles.length === 1) {
       const remainingFile = pngFiles[0];
@@ -130,7 +130,7 @@ class ImageMerger {
         const size = await this.getImageSize(remainingFile);
         const aspectRatio = this.getAspectRatio(size.width, size.height);
         const allowedRatios = ['1:1', '2:3', '3:2', '4:3', '3:4', '9:16', '16:9'];
-        
+
         if (allowedRatios.includes(aspectRatio)) {
           await this.moveToError(remainingFile, this.i18n.t('error.remaining.single'));
           this.stats.errors++;
@@ -143,7 +143,7 @@ class ImageMerger {
         this.stats.errors++;
       }
     }
-    
+
     // 显示统计信息
     this.showStats();
   }
@@ -210,36 +210,34 @@ class ImageMerger {
     // 1. 检查尺寸是否相同
     const size1 = await this.getImageSize(file1);
     const size2 = await this.getImageSize(file2);
-    
+
     // 2. 检查宽高比是否符合要求
     const aspectRatio = this.getAspectRatio(size1.width, size1.height);
     const allowedRatios = ['1:1', '2:3', '3:2', '4:3', '3:4', '9:16', '16:9'];
     const isValidRatio = allowedRatios.includes(aspectRatio);
-    
+
     // 如果宽高比不符合要求，不移入error，留在原始文件夹
     if (!isValidRatio) {
       this.log(`⚠️  ${this.i18n.t('match.ratio.invalid', aspectRatio, allowedRatios.join(', '))}`);
       return { canProcess: false, shouldMoveToError: false, reason: this.i18n.t('match.ratio.unsupported') + `: ${aspectRatio}` };
     }
-    
+
     // 只有宽高比符合要求的图片才进行后续检查
     if (size1.width !== size2.width || size1.height !== size2.height) {
       this.log(`❌ ${this.i18n.t('match.size.different')}: ${size1.width}x${size1.height} vs ${size2.width}x${size2.height}`);
       return { canProcess: false, shouldMoveToError: true, reason: `${this.i18n.t('match.size.different')}: ${size1.width}x${size1.height} vs ${size2.width}x${size2.height}` };
     }
-    
+
     // 3. 检查创建时间差是否小于60秒
     const timeDiff = await this.getTimeDifference(file1, file2);
     if (timeDiff >= 60) {
       this.log(`❌ ${this.i18n.t('match.time.exceeded')}: ${timeDiff}${this.i18n.getCurrentLanguage() === 'zh' ? '秒' : 's'}`);
       return { canProcess: false, shouldMoveToError: true, reason: `${this.i18n.t('match.time.exceeded')}: ${timeDiff}${this.i18n.getCurrentLanguage() === 'zh' ? '秒' : 's'}` };
     }
-    
+
     this.log(this.i18n.t('match.success'));
     return { canProcess: true, shouldMoveToError: false, reason: this.i18n.t('match.success') };
   }
-
-
 
   /**
    * 获取图片尺寸
@@ -290,15 +288,15 @@ class ImageMerger {
    */
   async mergeImages(file1, file2) {
     const now = new Date();
-    const timestamp = now.getFullYear().toString() + 
-                     (now.getMonth() + 1).toString().padStart(2, '0') + 
-                     now.getDate().toString().padStart(2, '0') + 
-                     now.getHours().toString().padStart(2, '0') + 
-                     now.getMinutes().toString().padStart(2, '0') + 
-                     now.getSeconds().toString().padStart(2, '0') + 
+    const timestamp = now.getFullYear().toString() +
+                     (now.getMonth() + 1).toString().padStart(2, '0') +
+                     now.getDate().toString().padStart(2, '0') +
+                     now.getHours().toString().padStart(2, '0') +
+                     now.getMinutes().toString().padStart(2, '0') +
+                     now.getSeconds().toString().padStart(2, '0') +
                      now.getMilliseconds().toString().padStart(3, '0');
     const outputPath = path.join(this.doneDir, `merged_${timestamp}.png`);
-    
+
     try {
       // 从图1右下角提取150x75区域，覆盖到图2上面
       const size = await this.getImageSize(file1);
@@ -306,18 +304,17 @@ class ImageMerger {
       const cropY = size.height - 75;
       const overlayX = size.width - 150;
       const overlayY = size.height - 75;
-      
+
       // 提取图1的右下角区域
       const tempCrop = path.join(this.doneDir, `temp_crop_${timestamp}.png`);
       execSync(`magick "${file1}" -crop 150x75+${cropX}+${cropY} "${tempCrop}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
-      
+
       // 将提取的区域覆盖到图2上
       execSync(`magick "${file2}" "${tempCrop}" -geometry +${overlayX}+${overlayY} -composite "${outputPath}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
-      
+
       // 删除临时文件
       await fs.remove(tempCrop);
-      
-      
+
       this.log(this.i18n.t('merge.success', path.basename(outputPath)));
     } catch (error) {
       throw new Error(this.i18n.t('error.merge', error.message));
