@@ -11,6 +11,7 @@ const path = require('path');
 const os = require('os');
 const ImageMerger = require('../src/ImageMerger');
 const I18n = require('../src/i18n');
+const packageJson = require('../package.json');
 
 const program = new Command();
 
@@ -20,7 +21,7 @@ const program = new Command();
 program
   .name('image-merge')
   .description('Image Merge Tool - Intelligent PNG image merging using ImageMagick')
-  .version('1.0.0')
+  .version(packageJson.version)
   .option('-d, --work-dir <path>', 'Work directory path', path.join(os.homedir(), 'Downloads'))
   .option('-v, --verbose', 'Show verbose output')
   .option('-l, --lang <language>', 'Interface language (zh|en)', 'auto')
