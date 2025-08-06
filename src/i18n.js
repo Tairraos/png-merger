@@ -28,7 +28,7 @@ class I18n {
         'process.processing': '🔄 开始处理文件对...',
         
         // 目录操作
-        'dir.created': '📁 创建目录: processed, error, done',
+        'dir.created': '📁 创建必要目录',
         'file.moved.processed': '📦 移动到processed: {0}',
         'file.moved.error': '🗑️  移动到error: {0} ({1})',
         'file.moved.remaining': '📦 移动剩余文件到processed: {0}',
@@ -89,7 +89,7 @@ class I18n {
         'process.processing': '🔄 Processing file pairs...',
         
         // Directory operations
-        'dir.created': '📁 Created directories: processed, error, done',
+        'dir.created': '📁 Created necessary directories',
         'file.moved.processed': '📦 Moved to processed: {0}',
         'file.moved.error': '🗑️  Moved to error: {0} ({1})',
         'file.moved.remaining': '📦 Moved remaining file to processed: {0}',

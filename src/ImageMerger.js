@@ -19,9 +19,19 @@ class ImageMerger {
     this.workDir = workDir;
     this.verbose = verbose;
     this.i18n = i18n;
-    this.processedDir = path.join(workDir, 'processed');
-    this.errorDir = path.join(workDir, 'error');
-    this.doneDir = path.join(workDir, 'done');
+    
+    // 如果没有传入i18n实例，创建默认的中文实例
+    if (!this.i18n) {
+      const I18n = require('./i18n');
+      this.i18n = new I18n('zh');
+    }
+    
+    // 根据语言设置目录名
+    const isEnglish = this.i18n.getCurrentLanguage() === 'en';
+    this.processedDir = path.join(workDir, isEnglish ? 'materials' : '素材');
+    this.errorDir = path.join(workDir, isEnglish ? 'error' : '问题图片');
+    this.doneDir = path.join(workDir, isEnglish ? 'merged' : '已合成');
+    
     this.stats = {
       total: 0,
       processed: 0,
@@ -29,11 +39,7 @@ class ImageMerger {
       merged: 0
     };
     
-    // 如果没有传入i18n实例，创建默认的中文实例
-    if (!this.i18n) {
-      const I18n = require('./i18n');
-      this.i18n = new I18n('zh');
-    }
+    this.hasErrors = false; // 跟踪是否有错误文件
   }
 
   /**
@@ -147,9 +153,19 @@ class ImageMerger {
    */
   async createDirectories() {
     await fs.ensureDir(this.processedDir);
-    await fs.ensureDir(this.errorDir);
     await fs.ensureDir(this.doneDir);
+    // error目录只在有错误时才创建
     this.log(this.i18n.t('dir.created'));
+  }
+
+  /**
+   * 确保错误目录存在
+   */
+  async ensureErrorDir() {
+    if (!this.hasErrors) {
+      await fs.ensureDir(this.errorDir);
+      this.hasErrors = true;
+    }
   }
 
   /**
@@ -327,6 +343,7 @@ class ImageMerger {
    * @param {string} reason - 错误原因
    */
   async moveToError(file, reason) {
+    await this.ensureErrorDir(); // 确保错误目录存在
     const fileName = path.basename(file);
     const targetPath = path.join(this.errorDir, fileName);
     await fs.move(file, targetPath);
