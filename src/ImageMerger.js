@@ -28,9 +28,9 @@ class ImageMerger {
     
     // 根据语言设置目录名
     const isEnglish = this.i18n.getCurrentLanguage() === 'en';
-    this.processedDir = path.join(workDir, isEnglish ? 'materials' : '素材');
-    this.errorDir = path.join(workDir, isEnglish ? 'error' : '问题图片');
     this.doneDir = path.join(workDir, isEnglish ? 'merged' : '已合成');
+    this.processedDir = path.join(this.doneDir, isEnglish ? 'materials' : '素材');
+    this.errorDir = path.join(this.doneDir, isEnglish ? 'error' : '问题图片');
     
     this.stats = {
       total: 0,
@@ -152,8 +152,8 @@ class ImageMerger {
    * 创建必要的目录
    */
   async createDirectories() {
-    await fs.ensureDir(this.processedDir);
     await fs.ensureDir(this.doneDir);
+    await fs.ensureDir(this.processedDir);
     // error目录只在有错误时才创建
     this.log(this.i18n.t('dir.created'));
   }
