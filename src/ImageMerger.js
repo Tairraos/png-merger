@@ -26,9 +26,15 @@ class ImageMerger {
       this.i18n = new I18n('zh');
     }
 
-    // 根据语言设置目录名
+    // 根据语言设置目录名，使用带编号的格式
     const isEnglish = this.i18n.getCurrentLanguage() === 'en';
-    this.doneDir = path.join(workDir, isEnglish ? 'merged' : '已合成');
+    const baseDirName = isEnglish ? 'merged' : '已合成';
+    
+    // 查找下一个可用的编号目录
+    const nextNumber = this.findNextAvailableNumber(workDir, baseDirName);
+    const numberedDirName = `${baseDirName}-${nextNumber.toString().padStart(2, '0')}`;
+    
+    this.doneDir = path.join(workDir, numberedDirName);
     this.processedDir = path.join(this.doneDir, isEnglish ? 'materials' : '素材');
     this.errorDir = path.join(this.doneDir, isEnglish ? 'error' : '问题图片');
 
@@ -40,6 +46,34 @@ class ImageMerger {
     };
 
     this.hasErrors = false; // 跟踪是否有错误文件
+  }
+
+  /**
+   * 查找下一个可用的编号
+   * @param {string} workDir - 工作目录路径
+   * @param {string} baseDirName - 基础目录名（如"已合成"或"merged"）
+   * @returns {number} 下一个可用的编号
+   */
+  findNextAvailableNumber(workDir, baseDirName) {
+    let number = 1;
+    
+    // 循环检查目录是否存在，直到找到不存在的编号
+    while (true) {
+      const numberedDirName = `${baseDirName}-${number.toString().padStart(2, '0')}`;
+      const dirPath = path.join(workDir, numberedDirName);
+      
+      // 如果目录不存在，返回当前编号
+      if (!fs.existsSync(dirPath)) {
+        return number;
+      }
+      
+      number++;
+      
+      // 防止无限循环，最大支持99个目录
+      if (number > 99) {
+        throw new Error(this.i18n.t('error.toomany.dirs') || '目录编号超出限制（最大99个）');
+      }
+    }
   }
 
   /**
