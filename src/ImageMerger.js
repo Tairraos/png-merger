@@ -321,14 +321,16 @@ class ImageMerger {
    * @param {string} file2 - 第二个文件路径（覆盖图）
    */
   async mergeImages(file1, file2) {
-    const now = new Date();
-    const timestamp = now.getFullYear().toString() +
-                     (now.getMonth() + 1).toString().padStart(2, '0') +
-                     now.getDate().toString().padStart(2, '0') +
-                     now.getHours().toString().padStart(2, '0') +
-                     now.getMinutes().toString().padStart(2, '0') +
-                     now.getSeconds().toString().padStart(2, '0') +
-                     now.getMilliseconds().toString().padStart(3, '0');
+    // 使用第一个文件的创建时间作为时间戳
+    const stats1 = await fs.stat(file1);
+    const fileTime = stats1.birthtime;
+    const timestamp = fileTime.getFullYear().toString() +
+                     (fileTime.getMonth() + 1).toString().padStart(2, '0') +
+                     fileTime.getDate().toString().padStart(2, '0') +
+                     fileTime.getHours().toString().padStart(2, '0') +
+                     fileTime.getMinutes().toString().padStart(2, '0') +
+                     fileTime.getSeconds().toString().padStart(2, '0') +
+                     fileTime.getMilliseconds().toString().padStart(3, '0');
     const outputPath = path.join(this.doneDir, `merged_${timestamp}.png`);
 
     try {
