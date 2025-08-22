@@ -334,16 +334,16 @@ class ImageMerger {
     const outputPath = path.join(this.doneDir, `merged_${timestamp}.png`);
 
     try {
-      // 从图1右下角提取150x75区域，覆盖到图2上面
+      // 从图1右下角提取250x100区域，覆盖到图2上面
       const size = await this.getImageSize(file1);
-      const cropX = size.width - 150;
-      const cropY = size.height - 75;
-      const overlayX = size.width - 150;
-      const overlayY = size.height - 75;
+      const cropX = size.width - 250;
+      const cropY = size.height - 100;
+      const overlayX = size.width - 250;
+      const overlayY = size.height - 100;
 
       // 提取图1的右下角区域
       const tempCrop = path.join(this.doneDir, `temp_crop_${timestamp}.png`);
-      execSync(`magick "${file1}" -crop 150x75+${cropX}+${cropY} "${tempCrop}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
+      execSync(`magick "${file1}" -crop 250x100+${cropX}+${cropY} "${tempCrop}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
 
       // 将提取的区域覆盖到图2上
       execSync(`magick "${file2}" "${tempCrop}" -geometry +${overlayX}+${overlayY} -composite "${outputPath}"`, { stdio: ['pipe', 'pipe', 'pipe'] });
