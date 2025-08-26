@@ -101,7 +101,14 @@ class ImageMerger {
     
     // 处理文件队列
     while (pngFiles.length >= 2) {
-      const [file1, file2] = pngFiles;
+      let [file1, file2] = pngFiles;
+
+      // 检查file2的文件名是否以"web-preview-watermark"结尾，如果是则交换顺序
+      const file2BaseName = path.basename(file2, path.extname(file2));
+      if (file2BaseName.endsWith('web-preview-watermark')) {
+        [file1, file2] = [file2, file1];
+        this.log(`🔄 ${this.i18n.t('file.swapped', path.basename(file1), path.basename(file2))}`);
+      }
 
       this.log(this.i18n.t('match.checking', path.basename(file1), path.basename(file2)));
 
